@@ -60,14 +60,12 @@ async function main() {
   }
 
   console.log('✅  all finished')
+
+  await pg.$disconnect()
+  await sq.$disconnect()
 }
 
-main()
-  .catch(e => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await pg.$disconnect()
-    await sq.$disconnect()
-  })
+main().catch(e => {
+  console.error(e)
+  process.exit(1)
+})
