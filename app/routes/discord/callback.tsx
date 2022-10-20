@@ -1,9 +1,13 @@
-import type {LoaderFunction} from '@remix-run/node'
+import type {ActionArgs, LoaderArgs} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
 import type {KCDHandle} from '~/types'
 import * as React from 'react'
 import {requireUser} from '~/utils/session.server'
-import {getDomainUrl, getErrorMessage} from '~/utils/misc'
+import {
+  getDomainUrl,
+  getErrorMessage,
+  getRequiredServerEnvVar,
+} from '~/utils/misc'
 import {connectDiscord} from '~/utils/discord.server'
 import {deleteDiscordCache} from '~/utils/user-info.server'
 import {tagKCDSiteSubscriber} from '~/convertkit/convertkit.server'
@@ -12,7 +16,27 @@ export const handle: KCDHandle = {
   getSitemapEntries: () => null,
 }
 
-export const loader: LoaderFunction = async ({request}) => {
+export async function loader({request}: LoaderArgs) {
+  const FLY_REGION = getRequiredServerEnvVar('FLY_REGION')
+  if (FLY_REGION === ENV.PRIMARY_REGION) {
+    return handleDiscordCallback(request)
+  }
+
+  // we're in a secondary region, so we need to proxy the request to the primary
+  // region for the writes
+  const req = request.clone()
+  if (ENV.PRIMARY_REGION) {
+    req.headers.set('fly-prefer-region', ENV.PRIMARY_REGION)
+  }
+  const response = await fetch(req, {method: 'post'})
+  return response
+}
+
+export async function action({request}: ActionArgs) {
+  return handleDiscordCallback(request)
+}
+
+async function handleDiscordCallback(request: Request) {
   const user = await requireUser(request)
   const domainUrl = getDomainUrl(request)
   const code = new URL(request.url).searchParams.get('code')
