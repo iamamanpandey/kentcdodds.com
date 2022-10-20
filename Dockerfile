@@ -2,7 +2,7 @@
 FROM node:16-bullseye-slim as base
 
 # install open ssl for prisma and ffmpeg for the call kent functionality
-RUN apt-get update && apt-get install -y openssl ffmpeg
+RUN apt-get update && apt-get install -y openssl ffmpeg sqlite3
 
 # install all node_modules, including dev
 FROM base as deps
@@ -15,7 +15,7 @@ WORKDIR /app/
 
 ADD package.json .npmrc package-lock.json ./
 ADD other/patches ./other/patches
-RUN npm install --production=false
+RUN npm install --omit=dev
 
 # setup production node_modules
 FROM base as production-deps
