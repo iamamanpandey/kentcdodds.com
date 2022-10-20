@@ -169,8 +169,9 @@ jobs:
     name: 🐳 Build
     needs: [changes]
     if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      needs.changes.outputs.DEPLOYABLE == 'true' }}
+      ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
+      github.event_name == 'push' && needs.changes.outputs.DEPLOYABLE == 'true'
+      }}
     runs-on: ubuntu-latest
     # only build/deploy main branch on pushes
     steps:
@@ -235,8 +236,9 @@ jobs:
     needs: [changes, lint, typecheck, jest, build]
     # only build/deploy main branch on pushes
     if:
-      ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' &&
-      needs.changes.outputs.DEPLOYABLE == 'true' }}
+      ${{ (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev') &&
+      github.event_name == 'push' && needs.changes.outputs.DEPLOYABLE == 'true'
+      }}
 
     steps:
       - name: 🛑 Cancel Previous Runs
