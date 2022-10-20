@@ -38,6 +38,8 @@ WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
 
+ADD other/runfile.js /app/other/runfile.js
+
 # schema doesn't change much so these will stay cached
 ADD prisma /app/prisma
 ADD prisma-postgres /app/prisma-postgres
@@ -62,9 +64,11 @@ WORKDIR /app/
 
 COPY --from=production-deps /app/node_modules /app/node_modules
 COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma/client-postgres /app/node_modules/@prisma/client-postgres
 COPY --from=build /app/build /app/build
 COPY --from=build /app/public /app/public
 COPY --from=build /app/server-build /app/server-build
+COPY --from=build /app/other/runfile.js /app/other/runfile.js
 ADD . .
 
 CMD ["npm", "run", "start"]
