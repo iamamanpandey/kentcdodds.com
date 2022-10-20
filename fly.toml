@@ -15,15 +15,13 @@ kill_timeout = 5
   source = "data"
   destination = "/data"
 
-[deploy]
-  # TODO: remove migration one-off script
-  release_command = "node ./other/runfile.js prisma-postgres/migrate.ts && npx prisma migrate deploy"
-
 # IDEA: add back statics config here (fa0fbe9)
 
 [experimental]
   allowed_public_ports = []
   auto_rollback = true
+  cmd = "start.sh"
+  entrypoint = "sh"
 
 [[services]]
   internal_port = 8080
