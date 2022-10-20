@@ -25,7 +25,7 @@ WORKDIR /app/
 
 COPY --from=deps /app/node_modules /app/node_modules
 ADD package.json .npmrc package-lock.json /app/
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 # build app
 FROM base as build
@@ -39,9 +39,9 @@ WORKDIR /app/
 COPY --from=deps /app/node_modules /app/node_modules
 
 # schema doesn't change much so these will stay cached
-ADD prisma .
+ADD prisma prisma-postgres /app/
+
 RUN npx prisma generate
-ADD prisma-postgres .
 RUN npx prisma generate --schema ./prisma-postgres/schema.prisma
 
 # app code changes all the time
