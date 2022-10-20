@@ -2,24 +2,28 @@ import {PrismaClient as SqliteClient} from '@prisma/client'
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {PrismaClient as PostgresClient} from '@prisma/client-postgres'
 
-const pg = new PostgresClient({
-  datasources: {
-    db: {
-      url: process.env.POSTGRES_DATABASE_URL,
-    },
-  },
-})
-const sq = new SqliteClient({
-  datasources: {
-    db: {
-      url: process.env.DATABASE_URL,
-    },
-  },
-})
-
 // TIP: do not do this if you have lots of data... I don't
 // copy all data from pg to sq
 async function main() {
+  if (process.env.FLY_REGION !== process.env.PRIMARY_REGION) {
+    console.log('not primary region, skipping')
+    return
+  }
+
+  const pg = new PostgresClient({
+    datasources: {
+      db: {
+        url: process.env.POSTGRES_DATABASE_URL,
+      },
+    },
+  })
+  const sq = new SqliteClient({
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+  })
   await pg.$connect()
   await sq.$connect()
 
