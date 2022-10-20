@@ -41,6 +41,9 @@ COPY --from=deps /app/node_modules /app/node_modules
 # schema doesn't change much so these will stay cached
 ADD prisma prisma-postgres /app/
 
+RUN ls -al
+RUN ls -al prisma-postgres
+
 RUN npx prisma generate
 RUN npx prisma generate --schema ./prisma-postgres/schema.prisma
 
