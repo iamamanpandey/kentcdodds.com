@@ -20,7 +20,7 @@
   "homepage": "https://github.com/kentcdodds/kentcdodds.com#readme",
   "scripts": {
     "postinstall": "patch-package --patch-dir other/patches",
-    "prepare": "husky install",
+    "prepare": "husky install || true",
     "css:watch": "npm run build:css -- --w",
     "clean": "rimraf ./node_modules/.cache ./server/dist ./build ./public/build \"./app/styles/**/*.css\"",
     "prebuild": "npm run clean && echo All clean ✨",
