@@ -7,15 +7,15 @@ declare global {
   // This prevents us from making multiple connections to the db when the
   // require cache is cleared.
   // eslint-disable-next-line
-  var prismaRead: ReturnType<typeof getClient> | undefined
+  var prisma: ReturnType<typeof getClient> | undefined
   // eslint-disable-next-line
   var prismaWrite: ReturnType<typeof getClient> | undefined
 }
 
 const logThreshold = 50
 
-const prismaRead = global.prismaRead ?? (global.prismaRead = getClient())
-const prismaWrite = prismaRead
+const prisma = global.prisma ?? (global.prisma = getClient())
+const prismaWrite = prisma
 
 function getClient(): PrismaClient {
   // NOTE: during development if you change anything in this function, remember
@@ -153,7 +153,7 @@ async function createSession(
 }
 
 async function getUserFromSessionId(sessionId: string) {
-  const session = await prismaRead.session.findUnique({
+  const session = await prisma.session.findUnique({
     where: {id: sessionId},
     include: {user: true},
   })
@@ -182,10 +182,10 @@ async function getUserFromSessionId(sessionId: string) {
 async function getAllUserData(userId: string) {
   const {default: pProps} = await import('p-props')
   return pProps({
-    user: prismaRead.user.findUnique({where: {id: userId}}),
-    calls: prismaRead.call.findMany({where: {userId}}),
-    postReads: prismaRead.postRead.findMany({where: {userId}}),
-    sessions: prismaRead.session.findMany({where: {userId}}),
+    user: prisma.user.findUnique({where: {id: userId}}),
+    calls: prisma.call.findMany({where: {userId}}),
+    postReads: prisma.postRead.findMany({where: {userId}}),
+    sessions: prisma.session.findMany({where: {userId}}),
   })
 }
 
@@ -198,7 +198,7 @@ async function addPostRead({
   | {userId?: undefined; clientId: string}
 )) {
   const id = userId ? {userId} : {clientId}
-  const readInLastWeek = await prismaRead.postRead.findFirst({
+  const readInLastWeek = await prisma.postRead.findFirst({
     select: {id: true},
     where: {
       ...id,
@@ -218,7 +218,7 @@ async function addPostRead({
 }
 
 export {
-  prismaRead,
+  prisma,
   prismaWrite,
   getMagicLink,
   validateMagicLink,

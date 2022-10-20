@@ -1,5 +1,5 @@
 import type {LoaderFunction} from '@remix-run/node'
-import {prismaRead} from '~/utils/prisma.server'
+import {prisma} from '~/utils/prisma.server'
 import {getBlogReadRankings} from '~/utils/blog.server'
 
 export const loader: LoaderFunction = async ({request}) => {
@@ -8,7 +8,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
   try {
     await Promise.all([
-      prismaRead.user.count(),
+      prisma.user.count(),
       getBlogReadRankings({request}),
       fetch(`http://${host}`, {method: 'HEAD'}).then(r => {
         if (!r.ok) return Promise.reject(r)

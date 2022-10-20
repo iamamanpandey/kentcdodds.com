@@ -2,7 +2,7 @@ import type {Team, MdxListItem, Await, User} from '~/types'
 import {subYears, subMonths} from 'date-fns'
 import {shuffle} from 'lodash'
 import {getBlogMdxListItems} from './mdx'
-import {prismaRead} from './prisma.server'
+import {prisma} from './prisma.server'
 import {
   getDomainUrl,
   getOptionalTeam,
@@ -51,7 +51,7 @@ async function getBlogRecommendations(
   const where = user
     ? {user: {id: user.id}, postSlug: {notIn: exclude.filter(Boolean)}}
     : {clientId, postSlug: {notIn: exclude.filter(Boolean)}}
-  const readPosts = await prismaRead.postRead.groupBy({
+  const readPosts = await prisma.postRead.groupBy({
     by: ['postSlug'],
     where,
   })
@@ -125,7 +125,7 @@ async function getMostPopularPostSlugs({
   if (exclude.length) return getFreshValue()
 
   async function getFreshValue() {
-    const result = await prismaRead.postRead.groupBy({
+    const result = await prisma.postRead.groupBy({
       by: ['postSlug'],
       _count: true,
       orderBy: {
@@ -160,7 +160,7 @@ async function getTotalPostReads(request: Request, slug?: string) {
     request,
     checkValue: (value: unknown) => typeof value === 'number',
     getFreshValue: () =>
-      prismaRead.postRead.count(slug ? {where: {postSlug: slug}} : undefined),
+      prisma.postRead.count(slug ? {where: {postSlug: slug}} : undefined),
   })
 }
 
@@ -175,8 +175,8 @@ async function getReaderCount(request: Request) {
       // couldn't figure out how to do this in one query with out $queryRaw 🤷‍♂️
       type CountResult = [{count: BigInt}]
       const [userIdCount, clientIdCount] = await Promise.all([
-        prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
-        prismaRead.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."userId") FROM "public"."PostRead" WHERE ("public"."PostRead"."userId") IS NOT NULL` as Promise<CountResult>,
+        prisma.$queryRaw`SELECT COUNT(DISTINCT "public"."PostRead"."clientId") FROM "public"."PostRead" WHERE ("public"."PostRead"."clientId") IS NOT NULL` as Promise<CountResult>,
       ]).catch(() => [[{count: BigInt(0)}], [{count: BigInt(0)}]])
       return Number(userIdCount[0].count) + Number(clientIdCount[0].count)
     },
@@ -209,7 +209,7 @@ async function getBlogReadRankings({
         teams.map(async function getRankingsForTeam(
           team,
         ): Promise<{team: Team; totalReads: number; ranking: number}> {
-          const totalReads = await prismaRead.postRead.count({
+          const totalReads = await prisma.postRead.count({
             where: {
               postSlug: slug,
               user: {team},
@@ -297,7 +297,7 @@ async function getAllBlogPostReadRankings({
 async function getRecentReads(slug: string | undefined, team: Team) {
   const withinTheLastSixMonths = subMonths(new Date(), 6)
 
-  const count = await prismaRead.postRead.count({
+  const count = await prisma.postRead.count({
     where: {
       postSlug: slug,
       createdAt: {gt: withinTheLastSixMonths},
@@ -310,7 +310,7 @@ async function getRecentReads(slug: string | undefined, team: Team) {
 async function getActiveMembers(team: Team) {
   const withinTheLastYear = subYears(new Date(), 1)
 
-  const count = await prismaRead.user.count({
+  const count = await prisma.user.count({
     where: {
       team,
       postReads: {
@@ -327,7 +327,7 @@ async function getActiveMembers(team: Team) {
 async function getSlugReadsByUser(request: Request) {
   const user = await getUser(request)
   if (!user) return []
-  const reads = await prismaRead.postRead.findMany({
+  const reads = await prisma.postRead.findMany({
     where: {userId: user.id},
     select: {postSlug: true},
   })

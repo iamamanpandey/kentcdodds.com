@@ -1,6 +1,6 @@
 import type {ActionFunction} from '@remix-run/node'
 import {redirect} from '@remix-run/node'
-import {getMagicLink, prismaWrite, prismaRead} from '~/utils/prisma.server'
+import {getMagicLink, prisma} from '~/utils/prisma.server'
 import {getDomainUrl} from '~/utils/misc'
 
 export const action: ActionFunction = async ({request}) => {
@@ -16,10 +16,10 @@ export const action: ActionFunction = async ({request}) => {
     throw new Error('All test emails must end in example.com')
   }
 
-  const user = await prismaRead.user.findUnique({where: {email}})
+  const user = await prisma.user.findUnique({where: {email}})
   if (user) {
     if (typeof firstName === 'string') {
-      await prismaWrite.user.update({where: {id: user.id}, data: {firstName}})
+      await prisma.user.update({where: {id: user.id}, data: {firstName}})
     }
   } else {
     if (typeof firstName !== 'string') {
@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({request}) => {
       throw new Error('a valid team is required')
     }
 
-    await prismaWrite.user.create({data: {email, team, firstName, role}})
+    await prisma.user.create({data: {email, team, firstName, role}})
   }
   return redirect(
     getMagicLink({
