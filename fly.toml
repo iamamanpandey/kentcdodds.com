@@ -1,4 +1,4 @@
-app = "withered-frost-3196"
+app = "kcd"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
@@ -9,7 +9,11 @@ kill_timeout = 5
   HUSKY_SKIP_INSTALL = "1"
   NODE_ENV = "production"
   FLY = "true"
-  PRIMARY_REGION = "dfw"
+  PRIMARY_REGION = "den"
+
+[mounts]
+  source = "data"
+  destination = "/data"
 
 [deploy]
   # TODO: remove migration one-off script
